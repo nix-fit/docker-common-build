@@ -2,7 +2,6 @@ FROM nix-docker.registry.twcstorage.ru/base/redhat/ubi9-minimal:9.6@sha256:bb317
 
 LABEL org.opencontainers.image.authors="wizardy.oni@gmail.com"
 
-
 # Install prerequisites, jq
 WORKDIR /etc/tools
 
@@ -13,7 +12,7 @@ RUN microdnf -y --refresh \
                                                 tar \
                                                 gzip \
                                                 jq \
-    && microdnf -y clean all \
+    && microdnf clean all \
     && rm -rf /var/cache/dnf /var/cache/yum \
     && jq --version \
     && groupadd -g 1000 jenkins \
