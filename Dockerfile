@@ -2,7 +2,7 @@ FROM nix-docker.registry.twcstorage.ru/base/redhat/ubi9-minimal:9.6@sha256:bb317
 
 LABEL org.opencontainers.image.authors="wizardy.oni@gmail.com"
 
-# Install prerequisites, jq
+# Install prerequisites, jq, skopeo
 WORKDIR /etc/tools
 
 RUN microdnf -y --refresh \
@@ -12,9 +12,11 @@ RUN microdnf -y --refresh \
                                                 tar \
                                                 gzip \
                                                 jq \
+                                                skopeo \
     && microdnf clean all \
     && rm -rf /var/cache/dnf /var/cache/yum \
     && jq --version \
+    && skopeo --version \
     && groupadd -g 1000 jenkins \
     && useradd -u 1000 -g 1000 -m -d /home/jenkins/agent -s /bin/bash jenkins \
     && chown -R 1000:1000 /home/jenkins/agent
