@@ -1,4 +1,4 @@
-FROM nix-docker.registry.twcstorage.ru/base/redhat/ubi9-minimal:9.6@sha256:bb31756af74ea8e4ad046a80479e5aeea35fd01307a12d3ab9a5d92e8422b1f8
+FROM nix-docker.registry.twcstorage.ru/base/redhat/ubi10-minimal:10.1000-1766033715@sha256:05edf453b46e8f615ddad5bbeb3acebc4fbe3d467e2642d14cf43defd2b9465d
 
 LABEL org.opencontainers.image.authors="wizardy.oni@gmail.com"
 
