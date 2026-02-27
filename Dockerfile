@@ -34,6 +34,14 @@ RUN curl -kLso yq_${TARGETOS}_${TARGETARCH}.tar.gz "https://github.com/mikefarah
     && mv yq_${TARGETOS}_${TARGETARCH} yq \
     && rm -rf yq_${TARGETOS}_${TARGETARCH}.tar.gz
 
+# Install flux cli
+ARG FLUX_VERSION=2.8.0
+RUN curl -kLso flux_${FLUX_VERSION}_${TARGETOS}_${TARGETARCH}.tar.gz \
+        "https://github.com/fluxcd/flux2/releases/download/v${FLUX_VERSION}/flux_${FLUX_VERSION}_${TARGETOS}_${TARGETARCH}.tar.gz" \
+    && tar -zxvf flux_${FLUX_VERSION}_${TARGETOS}_${TARGETARCH}.tar.gz --no-same-owner --no-same-permissions \
+    && mv flux flux-cli \
+    && rm -rf flux_${FLUX_VERSION}_${TARGETOS}_${TARGETARCH}.tar.gz
+
 FROM nix-docker.registry.twcstorage.ru/base/redhat/ubi10-minimal:10.1002-1766033715
 
 LABEL org.opencontainers.image.authors="wizardy.oni@gmail.com,nex1gen@yandex.ru"
@@ -72,11 +80,13 @@ COPY --from=hadolint /bin/hadolint /usr/local/bin/hadolint
 RUN hadolint --version \
     && rm -rf /etc/tools
 
-# Install helm, yq
+# Install helm, yq, flux cli
 COPY --from=tools /etc/tools/helm /usr/local/bin/helm
 COPY --from=tools /etc/tools/yq /usr/local/bin/yq
+COPY --from=tools /etc/tools/flux-cli /usr/local/bin/flux
 RUN helm version \
-    && yq --version
+    && yq --version \
+    && flux --version
 
 ENV HOME=/home/jenkins/agent \
     XDG_RUNTIME_DIR=/home/jenkins/agent/.local/xdg \
