@@ -42,6 +42,17 @@ RUN curl -kLso flux_${FLUX_VERSION}_${TARGETOS}_${TARGETARCH}.tar.gz \
     && mv flux flux-cli \
     && rm -rf flux_${FLUX_VERSION}_${TARGETOS}_${TARGETARCH}.tar.gz
 
+# Install GitVersion (standalone binary; pipeline calls "gitversion -showvariable SemVer")
+# GitHub assets use x64 not amd64
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+ARG GITVERSION_VERSION=6.6.1
+RUN GITVERSION_ARCH=${TARGETARCH//amd64/x64} \
+    && curl -kLso gitversion-${GITVERSION_VERSION}.tar.gz \
+        "https://github.com/GitTools/GitVersion/releases/download/${GITVERSION_VERSION}/gitversion-linux-${GITVERSION_ARCH}-${GITVERSION_VERSION}.tar.gz" \
+    && tar -zxvf gitversion-${GITVERSION_VERSION}.tar.gz --no-same-owner --no-same-permissions \
+    && chmod 0755 gitversion \
+    && rm -rf gitversion-${GITVERSION_VERSION}.tar.gz
+
 FROM nix-docker.registry.twcstorage.ru/base/redhat/ubi10-minimal:10.1002-1766033715
 
 LABEL org.opencontainers.image.authors="wizardy.oni@gmail.com,nex1gen@yandex.ru"
@@ -58,6 +69,7 @@ RUN microdnf -y --refresh \
                                                 jq \
                                                 skopeo \
                                                 crun \
+                                                libicu \
     && microdnf clean all \
     && rm -rf /var/cache/dnf /var/cache/yum \
     && jq --version \
@@ -80,13 +92,15 @@ COPY --from=hadolint /bin/hadolint /usr/local/bin/hadolint
 RUN hadolint --version \
     && rm -rf /etc/tools
 
-# Install helm, yq, flux cli
+# Install helm, yq, flux cli, GitVersion
 COPY --from=tools /etc/tools/helm /usr/local/bin/helm
 COPY --from=tools /etc/tools/yq /usr/local/bin/yq
 COPY --from=tools /etc/tools/flux-cli /usr/local/bin/flux
+COPY --from=tools /etc/tools/gitversion /usr/local/bin/gitversion
 RUN helm version \
     && yq --version \
-    && flux --version
+    && flux --version \
+    && gitversion -version
 
 ENV HOME=/home/jenkins/agent \
     XDG_RUNTIME_DIR=/home/jenkins/agent/.local/xdg \
